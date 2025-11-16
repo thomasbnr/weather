@@ -2,6 +2,8 @@ import requests
 import pandas as pd
 
 def load_weather_data():
+    """Download valid daily weather features that the API provides."""
+
     url = "https://archive-api.open-meteo.com/v1/archive"
 
     params = {
@@ -22,17 +24,12 @@ def load_weather_data():
     }
 
     response = requests.get(url, params=params)
+    data = response.json()
 
-    print("STATUS CODE:", response.status_code)
-    print("RAW RESPONSE:", response.text[:1000])   # important
-    print("JSON KEYS:", list(response.json().keys()))
+    if "daily" not in data:
+        raise ValueError(f"API response has no 'daily' field. Response was: {data}")
 
-    if "daily" not in response.json():
-        raise ValueError("The API response does NOT contain 'daily'. See above logs.")
-
-    data = response.json()["daily"]
-
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(data["daily"])
     df["time"] = pd.to_datetime(df["time"])
     df = df.sort_values("time")
 
