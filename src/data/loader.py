@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 
 def load_weather_data():
-    """Download valid daily weather features that the API provides."""
+    """Download hourly weather data from Open-Meteo for New York."""
 
     url = "https://archive-api.open-meteo.com/v1/archive"
 
@@ -11,14 +11,18 @@ def load_weather_data():
         "longitude": -74.0060,
         "start_date": "2010-01-01",
         "end_date": "2024-12-31",
-        "daily": [
-            "temperature_2m_max",
-            "temperature_2m_min",
-            "temperature_2m_mean",
-            "precipitation_sum",
-            "windspeed_10m_max",
-            "winddirection_10m_dominant",
-            "shortwave_radiation_sum"
+        "hourly": [
+            "temperature_2m",
+            "relativehumidity_2m",
+            "dewpoint_2m",
+            "windspeed_10m",
+            "winddirection_10m",
+            "pressure_msl",
+            "shortwave_radiation",
+            "direct_radiation",
+            "diffuse_radiation",
+            "cloudcover",
+            "precipitation"
         ],
         "timezone": "America/New_York"
     }
@@ -26,10 +30,10 @@ def load_weather_data():
     response = requests.get(url, params=params)
     data = response.json()
 
-    if "daily" not in data:
-        raise ValueError(f"API response has no 'daily' field. Response was: {data}")
+    if "hourly" not in data:
+        raise ValueError(f"API response missing 'hourly'. Raw response: {data}")
 
-    df = pd.DataFrame(data["daily"])
+    df = pd.DataFrame(data["hourly"])
     df["time"] = pd.to_datetime(df["time"])
     df = df.sort_values("time")
 
